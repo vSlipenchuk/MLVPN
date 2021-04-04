@@ -77,7 +77,8 @@ enum cmd_types {
     PRIV_RUN_SCRIPT,    /* run status script */
     PRIV_RELOAD_RESOLVER,
     PRIV_GETADDRINFO,
-    PRIV_SET_RUNNING_STATE /* ready for maximum security */
+    PRIV_SET_RUNNING_STATE, /* ready for maximum security */
+    PRIV_FREEADDRINFO
 };
 
 /* Error message for some communication between processes */
@@ -330,6 +331,17 @@ priv_init(char *argv[], char *username)
             must_write(socks[0], &len, sizeof(len));
             must_write(socks[0], errormessage, len);
             break;
+          case PRIV_FREEADDRINFO:
+            /* Expecting: pointer to addrinfo to free */
+            {
+            struct addrinfo *res;
+            must_read(socks[0], &res, sizeof(res));
+            dbg("free %x",res);
+            freeaddrinfo(res);
+            }
+            //if (hostname_len > sizeof(hostname))
+              //  _exit(0);
+            break;
 
         case PRIV_GETADDRINFO:
             /* Expecting: len, hostname, len, servname, hints */
@@ -564,6 +576,8 @@ priv_open_config(char *config_path)
     return fd;
 }
 
+
+
 /* Open tun from unpriviled code
  * Scope: public
  */
@@ -606,6 +620,11 @@ int priv_open_tun(int tuntapmode, char *devname, int mtu)
     return fd;
 }
 
+void priv_freeaddrinfo(struct addrinfo *res) {
+int cmd = PRIV_FREEADDRINFO;
+    must_write(priv_fd, &cmd, sizeof(cmd));
+    must_write(priv_fd, res, sizeof(res));
+}
 
 /* Name/service to address translation.  Response is placed into addr, and
  * the length is returned (zero on error) */
@@ -654,6 +673,7 @@ priv_getaddrinfo(char *host, char *serv, struct addrinfo **addrinfo,
     for (i=0; i < ret_len; i++)
     {
         new = malloc(sizeof(struct addrinfo));
+        memset(new,0,sizeof(*new));
         must_read(priv_fd, &new->ai_flags, sizeof(new->ai_flags));
         must_read(priv_fd, &new->ai_family, sizeof(new->ai_family));
         must_read(priv_fd, &new->ai_socktype, sizeof(new->ai_socktype));
@@ -771,6 +791,11 @@ priv_set_running_state(void)
 
 /* When child dies, move into the shutdown state */
 /* ARGSUSED */
+
+#ifndef WAIT_ANY
+#define WAIT_ANY -1
+#endif
+
 static void
 sig_got_chld(int sig)
 {

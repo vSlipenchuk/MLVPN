@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <sys/param.h>
 #include <sys/types.h>
+#include <string.h>
 
 /*
  * We want functions in openbsd-compat, if enabled, to override system ones.

@@ -1,6 +1,9 @@
 #include "mlvpn.h"
 
+#ifdef HAVE_FILTERS
+
 extern struct mlvpn_filters_s mlvpn_filters;
+
 
 mlvpn_tunnel_t *
 mlvpn_filters_choose(uint32_t pktlen, const u_char *pktdata) {
@@ -35,3 +38,5 @@ mlvpn_filters_add(const struct bpf_program *filter, mlvpn_tunnel_t *tun) {
     mlvpn_filters.count++;
     return 0;
 }
+
+#endif

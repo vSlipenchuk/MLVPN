@@ -1,12 +1,14 @@
 #include "includes.h"
 
+#if defined(HAVE_FREEBSD) || defined(HAVE_OPENBSD)
+
 #include <err.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <net/if.h>
-#include <net/if_types.h>
+#include <netcd /if_types.h>
 #include <net/if_tun.h>
 #include <sys/uio.h>
 
@@ -175,3 +177,4 @@ root_tuntap_open(int tuntapmode, char *devname, int mtu)
     return fd;
 }
 
+#endif

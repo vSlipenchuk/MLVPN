@@ -205,13 +205,13 @@ mlvpn_sock_set_nonblocking(int fd)
     return ret;
 }
 
-inline static 
+inline static
 void mlvpn_rtun_tick(mlvpn_tunnel_t *t) {
     t->last_activity = ev_now(EV_DEFAULT_UC);
 }
 
 /* Inject the packet to the tuntap device (real network) */
-inline static 
+inline static
 void mlvpn_rtun_inject_tuntap(mlvpn_pkt_t *pkt)
 {
     mlvpn_pkt_t *tuntap_pkt = mlvpn_pktbuffer_write(tuntap.sbuf);
@@ -767,10 +767,17 @@ mlvpn_rtun_recalc_weight()
     }
 }
 
+void freeaddrinfo2(struct addrinfo *res) {
+if (!res) return;
+if (res->ai_next) freeaddrinfo2(res->ai_next);
+free(res);
+}
+
+
 static int
 mlvpn_rtun_bind(mlvpn_tunnel_t *t)
 {
-    struct addrinfo hints, *res;
+    struct addrinfo hints, *res = 0;
     int n, fd;
 
     memset(&hints, 0, sizeof(hints));
@@ -785,7 +792,7 @@ mlvpn_rtun_bind(mlvpn_tunnel_t *t)
     hints.ai_socktype = SOCK_DGRAM;
 
     n = priv_getaddrinfo(t->bindaddr, t->bindport, &res, &hints);
-    if (n <= 0)
+    if (n <= 0 || !res)
     {
         log_warnx(NULL, "%s getaddrinfo error: %s", t->name, gai_strerror(n));
         return -1;
@@ -793,9 +800,14 @@ mlvpn_rtun_bind(mlvpn_tunnel_t *t)
 
     /* Try open socket with each address getaddrinfo returned,
        until getting a valid listening socket. */
+
     log_info(NULL, "%s bind to %s", t->name, *t->bindaddr ? t->bindaddr : "any");
+
     n = bind(fd, res->ai_addr, res->ai_addrlen);
-    freeaddrinfo(res);
+    //  priv_freeaddrinfo(res);
+    freeaddrinfo2(res); // on openwrt freeaddrinfo() crush server if res was allocated manually my malloc...
+
+
     if (n < 0)
     {
         log_warn(NULL, "%s bind error", t->name);

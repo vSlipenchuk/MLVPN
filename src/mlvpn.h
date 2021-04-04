@@ -47,7 +47,7 @@
 #include "timestamp.h"
 
 #define MLVPN_MAXHNAMSTR 256
-#define MLVPN_MAXPORTSTR 6
+#define MLVPN_MAXPORTSTR 8
 
 /* Number of packets in the queue. Each pkt is ~ 1520 */
 /* 1520 * 128 ~= 24 KBytes of data maximum per channel VMSize */
@@ -78,7 +78,7 @@
 
 #define NEXT_KEEPALIVE(now, t) (now + 1)
 /* Protocol version of mlvpn
- * version 0: mlvpn 2.0 to 2.1 
+ * version 0: mlvpn 2.0 to 2.1
  * version 1: mlvpn 2.2+ (add reorder field in mlvpn_proto_t)
  */
 #define MLVPN_PROTOCOL_VERSION 1

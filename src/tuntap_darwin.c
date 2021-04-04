@@ -1,4 +1,5 @@
 #include "includes.h"
+#ifdef  HAVE_DARWIN
 
 #include <err.h>
 #include <sys/ioctl.h>
@@ -110,3 +111,5 @@ root_tuntap_open(int tuntapmode, char *devname, int mtu)
     fd = open(devname, O_RDWR);
     return fd;
 }
+
+#endif

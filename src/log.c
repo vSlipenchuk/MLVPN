@@ -44,6 +44,16 @@ static void logit(int, const char *, const char *, ...);
 #define MAX_DBG_TOKENS 40
 static const char *tokens[MAX_DBG_TOKENS + 1] = {NULL};
 
+
+void dbg(const char * fmt, ...) {
+
+   va_list ap;  va_start(ap, fmt);
+      fprintf(stderr,"DBG======>");  vfprintf(stderr,fmt, ap); fprintf(stderr,"\n");
+   va_end(ap);
+
+}
+
+
 void
 log_init(int n_debug, int n_level, const char *progname)
 {
